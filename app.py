@@ -53,8 +53,12 @@ if 'step' not in st.session_state:
 def next_step(): st.session_state.step += 1
 def prev_step(): st.session_state.step -= 1
 def reset():
+    keys_to_clear = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12',
+                      'context','mode','data_ta','gen_tau','data_ei','gen_ei']
+    for k in keys_to_clear:
+        if k in st.session_state:
+            del st.session_state[k]
     st.session_state.step = 1
-    st.session_state.mode = None
 
 # ── HEADER ────────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -207,9 +211,13 @@ elif step == 5:
     col1, col2 = st.columns(2)
     with col1: st.button("← Înapoi", on_click=prev_step, use_container_width=True)
     with col2:
-        label = "Continuă →" if mode == "profund" else "💜 Calculează Raportul"
-        if st.button(label, type="primary", use_container_width=True):
-            next_step()
+        if mode == "profund":
+            st.button("Continuă →", type="primary", on_click=next_step, use_container_width=True)
+        else:
+            if st.button("💜 Calculează Raportul", type="primary", use_container_width=True):
+                with st.spinner("Se calculează raportul... un moment"):
+                    next_step()
+                    st.rerun()
 
 # ════════════════════════════════════════════════════════════════════════════
 # PASUL 6 (doar mod profund) — PORTRET COSMIC: date de naștere
@@ -252,7 +260,9 @@ calculat din răspunsurile tale.
     with col1: st.button("← Înapoi", on_click=prev_step, use_container_width=True)
     with col2:
         if st.button("💜 Calculează Raportul", type="primary", use_container_width=True):
-            next_step()
+            with st.spinner("Se calculează raportul... un moment"):
+                next_step()
+                st.rerun()
 
 # ════════════════════════════════════════════════════════════════════════════
 # PASUL FINAL — REZULTATE
@@ -462,6 +472,38 @@ nu ca o evaluare științifică a relației voastre.
                 total = sum(int(c) for c in str(total))
             return total
 
+        # Descrieri pe scurt ale fiecărei zodii
+        descrieri_zodii = {
+            "Berbec": "energic, direct, inițiator. Îi place să pornească lucruri și să conducă, dar poate fi nerăbdător.",
+            "Taur": "stabil, perseverent, atașat de confort și siguranță. Valorează loialitatea și constanța.",
+            "Gemeni": "curios, comunicativ, adaptabil. Are nevoie de varietate și schimburi mentale constante.",
+            "Rac": "sensibil, protector, orientat spre familie și emoții. Își amintește totul și simte profund.",
+            "Leu": "generos, mândru, cu nevoie de recunoaștere. Iubește să strălucească și să fie apreciat.",
+            "Fecioară": "analitic, ordonat, dedicat. Observă detalii și are tendința de a îmbunătăți tot ce face.",
+            "Balanță": "echilibrat, diplomatic, orientat spre armonie și relații. Caută corectitudinea în orice.",
+            "Scorpion": "intens, profund, loial, cu nevoie de conexiuni autentice și transformatoare.",
+            "Săgetător": "aventuros, optimist, iubitor de libertate. Are nevoie de spațiu și sens în viață.",
+            "Capricorn": "ambițios, responsabil, disciplinat. Construiește pas cu pas și prețuiește rezultatele.",
+            "Vărsător": "independent, original, orientat spre idei și viitor. Are nevoie de libertate intelectuală.",
+            "Pisci": "intuitiv, empatic, visător. Simte profund și se conectează adesea dincolo de cuvinte.",
+        }
+
+        # Descrieri pe scurt ale numerelor guvernante (numerologie)
+        descrieri_numere = {
+            1: "Liderul — independent, ambițios, are nevoie să își urmeze propriul drum.",
+            2: "Diplomatul — sensibil, cooperant, caută echilibru și armonie în relații.",
+            3: "Comunicatorul — creativ, expresiv, optimist, are nevoie de exprimare liberă.",
+            4: "Constructorul — practic, ordonat, valorează stabilitatea și munca temeinică.",
+            5: "Liberul spirit — aventuros, adaptabil, are nevoie de schimbare și varietate.",
+            6: "Îngrijitorul — orientat spre familie, responsabil, caută armonie și conexiune profundă.",
+            7: "Căutătorul — introspectiv, analitic, are nevoie de timp singur și de sens.",
+            8: "Organizatorul — ambițios, orientat spre realizări materiale și putere personală.",
+            9: "Umanistul — generos, idealist, are o perspectivă largă, orientată spre ceilalți.",
+            11: "Numărul Maestru al Intuiției — sensibil, vizionar, inspirat, dar și predispus la anxietate.",
+            22: "Numărul Maestru al Constructorului — viziune mare combinată cu simț practic, potențial de impact major.",
+            33: "Numărul Maestru al Învățătorului — compasiune, devotament pentru ceilalți, energie de vindecare.",
+        }
+
         zodie_ta = zodie(st.session_state.data_ta)
         zodie_ei = zodie(st.session_state.data_ei)
         nr_tau = numar_guvernant(st.session_state.data_ta)
@@ -486,6 +528,15 @@ nu ca o evaluare științifică a relației voastre.
             """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
+        col_d1, col_d2 = st.columns(2)
+        with col_d1:
+            st.caption(f"**{zodie_ta}** — {descrieri_zodii[zodie_ta]}")
+            st.caption(f"**Numărul {nr_tau}** — {descrieri_numere[nr_tau]}")
+        with col_d2:
+            st.caption(f"**{zodie_ei}** — {descrieri_zodii[zodie_ei]}")
+            st.caption(f"**Numărul {nr_ei}** — {descrieri_numere[nr_ei]}")
+
+        st.markdown("<br>", unsafe_allow_html=True)
 
         # Compatibilitate zodiacală simplificată (elementele)
         elemente = {
@@ -494,41 +545,50 @@ nu ca o evaluare științifică a relației voastre.
             "Gemeni":"Aer","Balanță":"Aer","Vărsător":"Aer",
             "Rac":"Apă","Scorpion":"Apă","Pisci":"Apă"
         }
+        descrieri_elemente = {
+            "Foc": "energie, inițiativă, pasiune — acționează rapid și are nevoie de spontaneitate.",
+            "Pământ": "stabilitate, simț practic, răbdare — acționează ferm și are nevoie de siguranță.",
+            "Aer": "idei, comunicare, mobilitate — acționează prin gândire și are nevoie de schimb mental.",
+            "Apă": "emoție, intuiție, profunzime — acționează prin simțire și are nevoie de conexiune autentică.",
+        }
         el_ta, el_ei = elemente[zodie_ta], elemente[zodie_ei]
         compat_elemente = {
-            ("Foc","Foc"):"Energie intensă, dinamism mare, dar și posibile fricțiuni de ego.",
-            ("Foc","Aer"):"Combinație clasică — aerul alimentează focul, comunicare vie.",
-            ("Foc","Pământ"):"Tensiune creativă — focul aduce mișcare, pământul aduce stabilitate.",
-            ("Foc","Apă"):"Contrast puternic — pasiune versus profunzime emoțională, poate fi greu sau complementar.",
-            ("Aer","Aer"):"Conexiune mentală puternică, multă comunicare, posibil lipsă de ancorare.",
-            ("Aer","Pământ"):"Aerul aduce idei, pământul aduce concret — pot construi împreună cu răbdare.",
-            ("Aer","Apă"):"Mental versus emoțional — necesită traducere între cele două lumi.",
-            ("Pământ","Pământ"):"Stabilitate solidă, valori comune, ritm asemănător.",
-            ("Pământ","Apă"):"Combinație nutritivă — pământul oferă structură, apa oferă profunzime.",
-            ("Apă","Apă"):"Conexiune emoțională foarte intensă, empatie mare, posibil prea multă intensitate.",
+            ("Foc","Foc"):"Energie intensă și dinamism mare — amândoi acționați rapid și aveți chimie naturală. Riscul este competiția de ego sau epuizarea prin viteza constantă; aveți nevoie de momente de încetinire conștientă.",
+            ("Foc","Aer"):"Combinație clasică — aerul alimentează focul, iar comunicarea curge natural. Ideile uneia se transformă rapid în acțiune pentru cealaltă. Funcționează bine cât timp aerul nu „suflă” prea tare și nu stinge flacăra prin critică excesivă.",
+            ("Foc","Pământ"):"Tensiune creativă — focul aduce mișcare și avânt, pământul aduce stabilitate și răbdare. Pot fi un cuplu complementar dacă pământul nu frânează prea tare entuziasmul, iar focul nu grăbește prea mult lucrurile.",
+            ("Foc","Apă"):"Contrast puternic — pasiune versus profunzime emoțională. Apa poate „stinge” sau poate îmblânzi focul, în timp ce focul poate „evapora” sau poate energiza apa. Relația poate fi fie foarte transformatoare, fie greu de armonizat, în funcție de cât de mult se ascultă reciproc.",
+            ("Aer","Aer"):"Conexiune mentală foarte puternică — multă comunicare, idei comune, libertate reciprocă. Riscul este o relație care rămâne prea mult „în cap” și nu se ancorează suficient în concret sau emoțional.",
+            ("Aer","Pământ"):"Aerul aduce idei și perspectivă, pământul aduce concret și execuție. Pot construi împreună lucruri durabile cu răbdare, dar pământul poate simți aerul ca fiind instabil, iar aerul poate simți pământul ca fiind prea rigid.",
+            ("Aer","Apă"):"Mental versus emoțional — aerul procesează prin gândire, apa prin simțire. Necesită traducere conștientă între cele două limbaje interioare; când funcționează, aerul ajută apa să își înțeleagă emoțiile, iar apa ajută aerul să simtă mai profund.",
+            ("Pământ","Pământ"):"Stabilitate solidă, valori comune, ritm de viață asemănător. Relația are baze sigure, dar trebuie să aveți grijă să nu cădeți într-o rutină prea previzibilă care elimină elementul de surpriză.",
+            ("Pământ","Apă"):"Combinație nutritivă — pământul oferă structură și siguranță, apa oferă profunzime emoțională și intuiție. De obicei se susțin reciproc bine, cu condiția ca pământul să nu devină prea rigid emoțional, iar apa să nu se simtă „revărsată” fără limite.",
+            ("Apă","Apă"):"Conexiune emoțională foarte intensă, empatie mare, înțelegere profundă fără multe cuvinte. Riscul este intensitatea — fără puncte de echilibru extern, relația poate deveni absorbantă sau predispusă la valuri emoționale mari.",
         }
         key = (el_ta, el_ei) if (el_ta, el_ei) in compat_elemente else (el_ei, el_ta)
         desc_elemente = compat_elemente.get(key, "")
 
         st.markdown(f"**Elementele zodiacale:** {zodie_ta} ({el_ta}) și {zodie_ei} ({el_ei})")
-        st.caption(desc_elemente)
+        st.caption(f"{el_ta}: {descrieri_elemente[el_ta]}" if el_ta == el_ei else f"{el_ta}: {descrieri_elemente[el_ta]} | {el_ei}: {descrieri_elemente[el_ei]}")
+        st.markdown(desc_elemente)
 
         # Numerologie - relatia dintre numere
         st.markdown(f"**Numerele guvernante:** {nr_tau} și {nr_ei}")
         diff = abs(nr_tau - nr_ei)
         if nr_tau == nr_ei:
-            st.caption("Numere identice — rezonanță puternică, înțelegere intuitivă, dar atenție să nu vă oglindiți doar punctele slabe.")
+            st.markdown(f"Amândoi aveți **numărul {nr_tau}** — o rezonanță numerologică puternică. Vă înțelegeți adesea intuitiv, pentru că procesați viața în moduri similare ({descrieri_numere[nr_tau].split('—')[0].strip().lower()}). Atenție însă: cele două numere identice pot amplifica și punctele slabe comune, nu doar pe cele forte — e util să fiți conștienți de tendințele voastre comune și să nu vă „oglindiți” reciproc în exces.")
         elif diff in (1, 2):
-            st.caption("Numere apropiate — ritmuri compatibile, ajustări ușoare necesare.")
+            st.markdown(f"Numerele voastre sunt apropiate (diferență de {diff}), ceea ce sugerează ritmuri de viață și valori destul de compatibile, cu ajustări mici necesare. {descrieri_numere[nr_tau].split('—')[0].strip()} se poate combina relativ ușor cu {descrieri_numere[nr_ei].split('—')[0].strip().lower()}, deoarece direcțiile generale nu sunt opuse, ci complementare.")
+        elif diff <= 4:
+            st.markdown(f"Există o distanță moderată între numerele voastre (diferență de {diff}). {descrieri_numere[nr_tau].split('—')[0].strip()} și {descrieri_numere[nr_ei].split('—')[0].strip().lower()} au stiluri diferite de a aborda viața — asta poate aduce echilibru (fiecare completează ce îi lipsește celuilalt) sau frecare, în funcție de cât de dispuși sunteți să înțelegeți perspectiva celuilalt.")
         else:
-            st.caption("Numere distante — perspective diferite asupra vieții, care pot fi complementare sau pot necesita mai multă comunicare.")
+            st.markdown(f"Numerele voastre sunt destul de distante (diferență de {diff}), ceea ce arată perspective de viață semnificativ diferite — {descrieri_numere[nr_tau].split('—')[0].strip().lower()} versus {descrieri_numere[nr_ei].split('—')[0].strip().lower()}. Diferența mare nu e neapărat un obstacol, dar cere mai multă comunicare conștientă pentru ca cele două „limbaje” să se traducă reciproc, fără frustrări.")
+
+        if 11 in (nr_tau, nr_ei) or 22 in (nr_tau, nr_ei) or 33 in (nr_tau, nr_ei):
+            st.caption("✨ Unul dintre voi are un Număr Maestru (11, 22 sau 33) — în numerologie, aceste numere sunt asociate cu o intensitate și un potențial mai mari, dar și cu provocări mai mari de gestionat pe plan personal.")
 
         st.caption("🔭 Reamintire: această secțiune este simbolică, nu schimbă scorul de mai sus.")
 
     st.markdown("---")
-    st.button("🔄 Completează din nou", on_click=reset, use_container_width=True)
-
-    # ── ISTORIC ───────────────────────────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)
     with st.expander("📋 Vezi toate rezultatele salvate"):
         df = incarca()
@@ -543,6 +603,9 @@ nu ca o evaluare științifică a relației voastre.
 
     st.markdown("---")
     st.caption("⚠️ Instrument de reflecție personală, nu un diagnostic psihologic sau științific.")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.button("🔄 Reia testul", type="primary", on_click=reset, use_container_width=True)
 
 st.markdown("---")
 st.caption("© 2026 Ciprian Axiniei · Instrument de reflecție relațională")
