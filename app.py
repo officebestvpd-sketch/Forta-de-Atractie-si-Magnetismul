@@ -1,8 +1,9 @@
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
+import numpy as np
 import os
-from datetime import datetime
+from datetime import datetime, date
 
 st.set_page_config(page_title="Analizor de Compatibilitate", page_icon="💜", layout="centered")
 
@@ -40,37 +41,84 @@ if 'step' not in st.session_state:
 
 def next_step(): st.session_state.step += 1
 def prev_step(): st.session_state.step -= 1
-def reset(): st.session_state.step = 1
+def reset():
+    st.session_state.step = 1
+    st.session_state.mode = None
 
 # ── HEADER ────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div style='text-align:center;padding:1rem 0 1.5rem'>
   <div style='font-size:48px;margin-bottom:8px'>💜</div>
   <h1 style='font-size:22px;font-weight:600;margin:0 0 6px'>Analizor de Compatibilitate Relațională</h1>
-  <p style='color:#888;font-size:14px;margin:0'>Patru pași simpli. Un raport detaliat despre ce simți.<br>Instrument de reflecție personală — nu un diagnostic.</p>
+  <p style='color:#888;font-size:14px;margin:0'>Câțiva pași simpli. Un raport detaliat despre ce simți.<br>Instrument de reflecție personală — nu un diagnostic.</p>
 </div>
 """, unsafe_allow_html=True)
 
-# ── PROGRESS ──────────────────────────────────────────────────────────────────
+# ── STEP MAP (depinde de mod) ───────────────────────────────────────────────
+mode = st.session_state.get('mode')
+if mode == "profund":
+    labels_prog = ["Intro", "Context", "Atracție", "Compatibilitate", "Profunzime", "Portret cosmic", "Raport"]
+else:
+    labels_prog = ["Intro", "Context", "Atracție", "Compatibilitate", "Profunzime", "Raport"]
+
+total_steps = len(labels_prog)
 step = st.session_state.step
-labels_prog = ["Context", "Atracție", "Compatibilitate", "Profunzime", "Raport"]
-cols_prog = st.columns(5)
+
+# ── PROGRESS ──────────────────────────────────────────────────────────────────
+cols_prog = st.columns(total_steps)
 for i, (col, label) in enumerate(zip(cols_prog, labels_prog)):
     with col:
         if i + 1 < step:
-            st.markdown(f"<div style='text-align:center'><div style='width:28px;height:28px;border-radius:50%;background:#1D9E75;color:white;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:13px'>✓</div><div style='font-size:10px;color:#1D9E75;font-weight:500'>{label}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='text-align:center'><div style='width:26px;height:26px;border-radius:50%;background:#1D9E75;color:white;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:12px'>✓</div><div style='font-size:9px;color:#1D9E75;font-weight:500'>{label}</div></div>", unsafe_allow_html=True)
         elif i + 1 == step:
-            st.markdown(f"<div style='text-align:center'><div style='width:28px;height:28px;border-radius:50%;background:#534AB7;color:white;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:13px;font-weight:600'>{i+1}</div><div style='font-size:10px;color:#534AB7;font-weight:600'>{label}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='text-align:center'><div style='width:26px;height:26px;border-radius:50%;background:#534AB7;color:white;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:12px;font-weight:600'>{i+1}</div><div style='font-size:9px;color:#534AB7;font-weight:600'>{label}</div></div>", unsafe_allow_html=True)
         else:
-            st.markdown(f"<div style='text-align:center'><div style='width:28px;height:28px;border-radius:50%;background:#f0f0f0;color:#aaa;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:13px'>{i+1}</div><div style='font-size:10px;color:#aaa'>{label}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='text-align:center'><div style='width:26px;height:26px;border-radius:50%;background:#f0f0f0;color:#aaa;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:12px'>{i+1}</div><div style='font-size:9px;color:#aaa'>{label}</div></div>", unsafe_allow_html=True)
 
-st.progress((step - 1) / 4, text="")
+st.progress((step - 1) / (total_steps - 1), text="")
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════════════════════
-# PASUL 1 — CONTEXT
+# PASUL 1 — INTRO + EXPLICAȚII + ALEGERE MOD
 # ════════════════════════════════════════════════════════════════════════════
 if step == 1:
+    st.markdown("### Cum funcționează acest test")
+    st.markdown("""
+Vei răspunde la o serie de întrebări despre o persoană la care te gândești.
+Pentru fiecare întrebare vei alege o notă **de la 1 la 10**, unde:
+
+- **1–2** = aproape deloc / nu se aplică
+- **3–4** = puțin, ocazional
+- **5–6** = moderat, undeva la mijloc
+- **7–8** = destul de mult, frecvent
+- **9–10** = foarte mult / aproape mereu
+
+Nu există răspunsuri "corecte" — fii sincer cu tine. La final vei primi un raport
+cu un scor general, grafice și o interpretare a rezultatelor tale.
+""")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### Ce tip de răspuns vrei?")
+    st.caption("Alege nivelul de profunzime al analizei.")
+
+    mode_choice = st.radio("mod", options=[
+        "⚡ Orientativ — răspuns rapid, bazat doar pe întrebările despre relație",
+        "🔭 Profund — pe lângă întrebări, adaugă și un portret simbolic (zodie + numerologie) pentru o perspectivă suplimentară",
+    ], label_visibility="collapsed", index=0 if st.session_state.get('mode') != 'profund' else 1)
+
+    if mode_choice.startswith("⚡"):
+        st.session_state.mode = "orientativ"
+    else:
+        st.session_state.mode = "profund"
+        st.info("📌 Secțiunea de portret cosmic (zodie + numerologie) este prezentată **separat**, ca o perspectivă simbolică și de divertisment — nu influențează scorul calculat din răspunsurile tale.")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.button("Continuă →", type="primary", use_container_width=True, on_click=next_step)
+
+# ════════════════════════════════════════════════════════════════════════════
+# PASUL 2 — CONTEXT
+# ════════════════════════════════════════════════════════════════════════════
+elif step == 2:
     st.markdown("### Care este starea actuală a relației?")
     st.caption("Alege situația care descrie cel mai bine contextul vostru în acest moment.")
     st.markdown("<br>", unsafe_allow_html=True)
@@ -79,17 +127,19 @@ if step == 1:
         "💚 Aliniere Deschisă — Suntem împreună / Sentimente confirmate reciproc",
         "🟡 Canal Parțial Blocat — Conexiune profundă, dar suntem amici / altă relație / distanță",
         "🔴 Asimetrie Neconfirmată — Simt conexiunea, dar cealaltă persoană nu o cunoaște sau nu o împărtășește",
-    ], label_visibility="collapsed")
+    ], label_visibility="collapsed", index=["💚","🟡","🔴"].index(st.session_state.get('context','💚')[0]) if st.session_state.get('context') else 0)
     st.session_state.context = context
     st.markdown("<br>", unsafe_allow_html=True)
-    st.button("Continuă →", type="primary", use_container_width=True, on_click=next_step)
+    col1, col2 = st.columns(2)
+    with col1: st.button("← Înapoi", on_click=prev_step, use_container_width=True)
+    with col2: st.button("Continuă →", type="primary", use_container_width=True, on_click=next_step)
 
 # ════════════════════════════════════════════════════════════════════════════
-# PASUL 2 — ATRACTIE (q1-q5)
+# PASUL 3 — ATRACTIE (q1-q5)
 # ════════════════════════════════════════════════════════════════════════════
-elif step == 2:
+elif step == 3:
     st.markdown("### Atracție")
-    st.caption("Cât de puternic te trage această persoană?")
+    st.caption("Cât de puternic te trage această persoană? (1 = aproape deloc · 10 = foarte mult)")
     st.markdown("<br>", unsafe_allow_html=True)
 
     q1 = st.slider("1. Cât de des te surprinzi gândindu-te la ea/el, chiar și fără niciun motiv anume?", 1, 10, st.session_state.get('q1', 5), help="1 = Rar / 10 = Constant")
@@ -107,11 +157,11 @@ elif step == 2:
     with col2: st.button("Continuă →", type="primary", on_click=next_step, use_container_width=True)
 
 # ════════════════════════════════════════════════════════════════════════════
-# PASUL 3 — COMPATIBILITATE (q6-q10)
+# PASUL 4 — COMPATIBILITATE (q6-q10)
 # ════════════════════════════════════════════════════════════════════════════
-elif step == 3:
+elif step == 4:
     st.markdown("### Compatibilitate")
-    st.caption("Cât de bine funcționați împreună?")
+    st.caption("Cât de bine funcționați împreună? (1 = aproape deloc · 10 = foarte mult)")
     st.markdown("<br>", unsafe_allow_html=True)
 
     q6  = st.slider("6. Cât de ușor poți vorbi cu ea/el ore întregi despre orice, fără să simți că pierzi vremea?", 1, 10, st.session_state.get('q6', 5), help="1 = Greu / 10 = Natural")
@@ -129,11 +179,11 @@ elif step == 3:
     with col2: st.button("Continuă →", type="primary", on_click=next_step, use_container_width=True)
 
 # ════════════════════════════════════════════════════════════════════════════
-# PASUL 4 — PROFUNZIME (q11-q12)
+# PASUL 5 — PROFUNZIME (q11-q12)
 # ════════════════════════════════════════════════════════════════════════════
-elif step == 4:
+elif step == 5:
     st.markdown("### Profunzime")
-    st.caption("Întrebările care spun adevărul.")
+    st.caption("Întrebările care spun adevărul. (1 = aproape deloc · 10 = foarte mult)")
     st.markdown("<br>", unsafe_allow_html=True)
 
     q11 = st.slider("11. Cât de mult ai lăsa orice altceva deoparte dacă ea/el ar fi în dificultate și ar avea nevoie de tine?", 1, 10, st.session_state.get('q11', 5), help="1 = Depinde / 10 = Oricând, fără ezitare")
@@ -146,13 +196,57 @@ elif step == 4:
     col1, col2 = st.columns(2)
     with col1: st.button("← Înapoi", on_click=prev_step, use_container_width=True)
     with col2:
+        label = "Continuă →" if mode == "profund" else "💜 Calculează Raportul"
+        if st.button(label, type="primary", use_container_width=True):
+            next_step()
+
+# ════════════════════════════════════════════════════════════════════════════
+# PASUL 6 (doar mod profund) — PORTRET COSMIC: date de naștere
+# ════════════════════════════════════════════════════════════════════════════
+elif step == 6 and mode == "profund":
+    st.markdown("### Portret cosmic")
+    st.markdown("""
+<div style='background:#FAEEDA;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;font-size:14px;color:#7a5a1e;line-height:1.6'>
+🔭 Această secțiune este <b>simbolică și de divertisment</b> — folosește zodia și numerologia
+pentru o perspectivă suplimentară. Nu are bază științifică și <b>nu influențează scorul</b>
+calculat din răspunsurile tale.
+</div>
+""", unsafe_allow_html=True)
+    st.caption("Completează datele pentru a vedea zodiile și numerele guvernante ale celor doi.")
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    st.markdown("**Tu**")
+    col1, col2 = st.columns(2)
+    with col1:
+        data_ta = st.date_input("Data nașterii (tu)", value=st.session_state.get('data_ta', date(1995,1,1)),
+                                 min_value=date(1930,1,1), max_value=date.today())
+    with col2:
+        gen_tau = st.selectbox("Gen (tu)", ["Feminin", "Masculin"], index=0 if st.session_state.get('gen_tau','Feminin')=="Feminin" else 1)
+
+    st.markdown("**Persoana cealaltă**")
+    col3, col4 = st.columns(2)
+    with col3:
+        data_ei = st.date_input("Data nașterii (cealaltă persoană)", value=st.session_state.get('data_ei', date(1995,1,1)),
+                                 min_value=date(1930,1,1), max_value=date.today())
+    with col4:
+        gen_ei = st.selectbox("Gen (cealaltă persoană)", ["Feminin", "Masculin"], index=1 if st.session_state.get('gen_ei','Masculin')=="Masculin" else 0)
+
+    st.session_state.data_ta = data_ta
+    st.session_state.gen_tau = gen_tau
+    st.session_state.data_ei = data_ei
+    st.session_state.gen_ei = gen_ei
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1: st.button("← Înapoi", on_click=prev_step, use_container_width=True)
+    with col2:
         if st.button("💜 Calculează Raportul", type="primary", use_container_width=True):
             next_step()
 
 # ════════════════════════════════════════════════════════════════════════════
-# PASUL 5 — REZULTATE
+# PASUL FINAL — REZULTATE
 # ════════════════════════════════════════════════════════════════════════════
-elif step == 5:
+elif step == total_steps:
     q1  = st.session_state.get('q1', 5)
     q2  = st.session_state.get('q2', 5)
     q3  = st.session_state.get('q3', 5)
@@ -168,39 +262,28 @@ elif step == 5:
     context = st.session_state.get('context', '')
 
     # ── CALCULE TSC ───────────────────────────────────────────────────────
-    # C(t) = conectivitatea sistemului = media normalizata [0,1]
     atractie  = (q1 + q2 + q3 + q4 + q5) / 5          # lambda — forta de atractie
     conectiv  = (q6 + q7 + q8 + q9 + q10) / 5         # C — conectivitatea structurala
     profunzime = (q11 + q12) / 2                        # factor de profunzime
 
-    # H(G) = E(G) - lambda * C(G)
-    # E(G) = 10 - profunzime (cu cat profunzimea e mai mare, cu atat energia interna e mai mica = mai stabil)
     E = 10 - profunzime
     H = E - (atractie * conectiv / 10)                  # Hamiltonianul relatiei
 
-    # chi = beta * Var(C) — susceptibilitatea
-    # Var(C) = variatia intre atractie si conectivitate (dezechilibru)
-    import numpy as np
     vals_all = [q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12]
     C_norm = conectiv / 10
     beta = 1 / C_norm if C_norm > 0 else 10
     var_C = float(np.var([q/10 for q in [q6,q7,q8,q9,q10]]))
-    chi = beta * var_C * 10                             # susceptibilitate — instabilitate interna
+    chi = beta * var_C * 10
 
-    # Scor final: bazat pe H mic = relatie stabila, chi mic = echilibrata
-    # Scor = 100 - H*5 - chi*10, ajustat la [0,100]
     scor_brut = 100 - (H * 5) - (chi * 10)
 
     # Penalizare context
     if "Aliniere" in context:
         penaliz, ctx_label, ctx_desc = 0, "Aliniere Deschisă", "Contextul este complet favorabil. Energia relației circulă liber în ambele sensuri."
-        ctx_color = "#1D9E75"
     elif "Parțial" in context or "Blocat" in context:
         penaliz, ctx_label, ctx_desc = 10, "Canal Parțial Blocat", "Există obstacole externe care limitează exprimarea naturală a conexiunii voastre."
-        ctx_color = "#BA7517"
     else:
         penaliz, ctx_label, ctx_desc = 20, "Asimetrie Neconfirmată", "Decalajul dintre ce simți tu și ce știe/simte cealaltă persoană creează o presiune internă semnificativă."
-        ctx_color = "#A32D2D"
 
     final = max(0, min(100, scor_brut - penaliz))
 
@@ -222,6 +305,7 @@ elif step == 5:
     # Salvează
     salveaza({
         "Data/Ora": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "Mod": mode,
         "Context": ctx_label,
         "Atractie_lambda": round(atractie, 2),
         "Conectivitate_C": round(conectiv, 2),
@@ -332,6 +416,104 @@ elif step == 5:
     if penaliz > 0:
         st.caption(f"Penalizare de context: -{penaliz} puncte din scorul brut de {scor_brut:.0f}.")
 
+    # ════════════════════════════════════════════════════════════════════
+    # PORTRET COSMIC (doar mod profund) — secțiune SEPARATĂ, simbolică
+    # ════════════════════════════════════════════════════════════════════
+    if mode == "profund":
+        st.markdown("---")
+        st.markdown("## 🔭 Portret cosmic")
+        st.markdown("""
+<div style='background:#FAEEDA;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:14px;color:#7a5a1e;line-height:1.6'>
+Această secțiune este <b>complet separată</b> de scorul calculat mai sus. Zodia și
+numerologia sunt prezentate ca <b>perspectivă simbolică și de divertisment</b>,
+nu ca o evaluare științifică a relației voastre.
+</div>
+""", unsafe_allow_html=True)
+
+        def zodie(d: date):
+            zodii = [
+                (date(1900,1,20), "Capricorn"), (date(1900,2,19), "Vărsător"), (date(1900,3,20), "Pisci"),
+                (date(1900,4,20), "Berbec"), (date(1900,5,21), "Taur"), (date(1900,6,21), "Gemeni"),
+                (date(1900,7,22), "Rac"), (date(1900,8,22), "Leu"), (date(1900,9,22), "Fecioară"),
+                (date(1900,10,23), "Balanță"), (date(1900,11,22), "Scorpion"), (date(1900,12,22), "Săgetător"),
+                (date(1900,12,31), "Capricorn"),
+            ]
+            md = (d.month, d.day)
+            for cutoff, name in zodii:
+                if md <= (cutoff.month, cutoff.day):
+                    return name
+            return "Capricorn"
+
+        def numar_guvernant(d: date):
+            digits = [int(c) for c in d.strftime("%Y%m%d")]
+            total = sum(digits)
+            while total > 9 and total not in (11, 22, 33):
+                total = sum(int(c) for c in str(total))
+            return total
+
+        zodie_ta = zodie(st.session_state.data_ta)
+        zodie_ei = zodie(st.session_state.data_ei)
+        nr_tau = numar_guvernant(st.session_state.data_ta)
+        nr_ei = numar_guvernant(st.session_state.data_ei)
+
+        col_c1, col_c2 = st.columns(2)
+        with col_c1:
+            st.markdown(f"""
+            <div style='background:#f5f3ff;border-radius:12px;padding:1rem;text-align:center;border:0.5px solid #ded8f5'>
+              <div style='font-size:12px;color:#888'>Tu ({st.session_state.gen_tau.lower()})</div>
+              <div style='font-size:20px;font-weight:600;color:#534AB7;margin:4px 0'>{zodie_ta}</div>
+              <div style='font-size:12px;color:#888'>Numărul guvernant: <b>{nr_tau}</b></div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col_c2:
+            st.markdown(f"""
+            <div style='background:#f5f3ff;border-radius:12px;padding:1rem;text-align:center;border:0.5px solid #ded8f5'>
+              <div style='font-size:12px;color:#888'>Cealaltă persoană ({st.session_state.gen_ei.lower()})</div>
+              <div style='font-size:20px;font-weight:600;color:#534AB7;margin:4px 0'>{zodie_ei}</div>
+              <div style='font-size:12px;color:#888'>Numărul guvernant: <b>{nr_ei}</b></div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Compatibilitate zodiacală simplificată (elementele)
+        elemente = {
+            "Berbec":"Foc","Leu":"Foc","Săgetător":"Foc",
+            "Taur":"Pământ","Fecioară":"Pământ","Capricorn":"Pământ",
+            "Gemeni":"Aer","Balanță":"Aer","Vărsător":"Aer",
+            "Rac":"Apă","Scorpion":"Apă","Pisci":"Apă"
+        }
+        el_ta, el_ei = elemente[zodie_ta], elemente[zodie_ei]
+        compat_elemente = {
+            ("Foc","Foc"):"Energie intensă, dinamism mare, dar și posibile fricțiuni de ego.",
+            ("Foc","Aer"):"Combinație clasică — aerul alimentează focul, comunicare vie.",
+            ("Foc","Pământ"):"Tensiune creativă — focul aduce mișcare, pământul aduce stabilitate.",
+            ("Foc","Apă"):"Contrast puternic — pasiune versus profunzime emoțională, poate fi greu sau complementar.",
+            ("Aer","Aer"):"Conexiune mentală puternică, multă comunicare, posibil lipsă de ancorare.",
+            ("Aer","Pământ"):"Aerul aduce idei, pământul aduce concret — pot construi împreună cu răbdare.",
+            ("Aer","Apă"):"Mental versus emoțional — necesită traducere între cele două lumi.",
+            ("Pământ","Pământ"):"Stabilitate solidă, valori comune, ritm asemănător.",
+            ("Pământ","Apă"):"Combinație nutritivă — pământul oferă structură, apa oferă profunzime.",
+            ("Apă","Apă"):"Conexiune emoțională foarte intensă, empatie mare, posibil prea multă intensitate.",
+        }
+        key = (el_ta, el_ei) if (el_ta, el_ei) in compat_elemente else (el_ei, el_ta)
+        desc_elemente = compat_elemente.get(key, "")
+
+        st.markdown(f"**Elementele zodiacale:** {zodie_ta} ({el_ta}) și {zodie_ei} ({el_ei})")
+        st.caption(desc_elemente)
+
+        # Numerologie - relatia dintre numere
+        st.markdown(f"**Numerele guvernante:** {nr_tau} și {nr_ei}")
+        diff = abs(nr_tau - nr_ei)
+        if nr_tau == nr_ei:
+            st.caption("Numere identice — rezonanță puternică, înțelegere intuitivă, dar atenție să nu vă oglindiți doar punctele slabe.")
+        elif diff in (1, 2):
+            st.caption("Numere apropiate — ritmuri compatibile, ajustări ușoare necesare.")
+        else:
+            st.caption("Numere distante — perspective diferite asupra vieții, care pot fi complementare sau pot necesita mai multă comunicare.")
+
+        st.caption("🔭 Reamintire: această secțiune este simbolică, nu schimbă scorul de mai sus.")
+
     st.markdown("---")
     st.button("🔄 Completează din nou", on_click=reset, use_container_width=True)
 
@@ -342,7 +524,8 @@ elif step == 5:
         if df.empty:
             st.info("Nu există rezultate salvate încă.")
         else:
-            st.dataframe(df[["Data/Ora","Context","Atractie_lambda","Conectivitate_C","Profunzime","Hamiltonian_H","Susceptibilitate_chi","Scor_Final"]], use_container_width=True)
+            cols_show = [c for c in ["Data/Ora","Mod","Context","Atractie_lambda","Conectivitate_C","Profunzime","Hamiltonian_H","Susceptibilitate_chi","Scor_Final"] if c in df.columns]
+            st.dataframe(df[cols_show], use_container_width=True)
             csv = df.to_csv(index=False).encode("utf-8")
             st.download_button("⬇️ Descarcă toate rezultatele (CSV)", csv, "rezultate.csv", "text/csv", use_container_width=True)
             st.caption(f"Total rezultate salvate: **{len(df)}**")
