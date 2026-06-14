@@ -4,7 +4,7 @@ import streamlit as st
 st.set_page_config(page_title="Analizor de Rezonanță TSC", page_icon="📊", layout="centered")
 
 # ==========================================
-# BARA LATERALĂ (CREDITS & METODOLOGIE CIPRIAN AXINIEI)
+# BARA LATERALĂ (CREDITS & METODOLOGIE)
 # ==========================================
 with st.sidebar:
     st.title("🔬 Teoria TSC")
@@ -26,9 +26,8 @@ st.title("📊 Analizor Universal de Rezonanță TSC")
 st.markdown("---")
 
 # ==========================================
-# PASUL 1: INTRODUCERE DATE (ÎNTREBĂRILE APAR PRIMA DATĂ)
+# INTRODUCERE DATE
 # ==========================================
-
 st.subheader("1. Contextul Real al Legăturii")
 context = st.radio(
     "Care este starea actuală a relației în teren?",
@@ -62,19 +61,14 @@ q10 = st.slider("10. Siguranța în Rețea: Cât de profundă este starea de lin
 st.markdown("---")
 
 # ==========================================
-# PASUL 2: CALCULUL ȘI AFIȘAREA REZULTATULUI
+# CALCUL ȘI REZULTAT
 # ==========================================
-
 if st.button("🔮 Calculează Rezonanța TSC", type="primary"):
-    
-    # Animație la calcul
     st.balloons()
     
-    # Calcul mediilor
     lambda_param = (q1 + q2 + q3 + q4 + q5) / 5.0
     c_param = (q6 + q7 + q8 + q9 + q10) / 5.0
     
-    # Determinare factor de context (Penalizare)
     if "Aliniere Deschisă" in context:
         fs = 0
         status_text = "Aliniere Deschisă"
@@ -85,14 +79,9 @@ if st.button("🔮 Calculează Rezonanța TSC", type="primary"):
         fs = 50
         status_text = "Emisie Asimetrică (Scurtcircuit)"
         
-    # Calcul Hamiltonian pur și final
     h_teoretic = 100 - (lambda_param * c_param)
-    h_final = h_teoretic + fs
+    h_final = min(max(h_teoretic + fs, 0.0), 100.0)
     
-    # Limităm H între 0 și 100 pentru siguranță grafică
-    h_final = min(max(h_final, 0.0), 100.0)
-    
-    # Stabilire stare
     if 0 <= h_final <= 15:
         stare = "Rezonanță Absolută (Suflet Pereche)"
         alert_box = st.success
@@ -112,7 +101,6 @@ if st.button("🔮 Calculează Rezonanța TSC", type="primary"):
         stare = "Haos Total (Colapsul Rețelei)"
         alert_box = st.error
 
-    # Afișare rezultate pe ecran
     st.header("📊 Raport de Diagnostic Biofizic")
     st.write(f"**Status Context:** {status_text}")
     st.metric(label="Hamiltonianul Final (Scor de Stres H)", value=f"{h_final:.2f}")
@@ -121,7 +109,6 @@ if st.button("🔮 Calculează Rezonanța TSC", type="primary"):
     
     st.markdown("---")
     st.subheader("🔀 Dinamica Sistemului: Potențial vs. Realitate")
-    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -129,31 +116,28 @@ if st.button("🔮 Calculează Rezonanța TSC", type="primary"):
         st.write(f"* **Scor de compatibilitate nativă:** `{h_teoretic:.2f}`")
         st.write(f"* **Forța de Atracție (λ):** `{lambda_param:.2f} / 10`")
         st.write(f"* **Conectivitatea Structurală (C):** `{c_param:.2f} / 10`")
-        st.write("###")
-        st.info("Aceasta este valoarea curată a compatibilității voastre, calculată strict pe baza simțirii și a deschiderii tale interioare, înainte ca regulile lumii fizice să intervină.")
+        st.info("Aceasta este valoarea curată a compatibilității voastre, înainte ca regulile fizice să intervină.")
 
     with col2:
         st.markdown("### 🔴 Realitatea din Teren (Bariera de Fază)")
         st.write(f"* **Scor Real de Stres (H):** `{h_final:.2f}`")
         st.write(f"* **Penalizare Context:** `+{fs}.00 puncte`")
-        st.write("###")
         if fs == 0:
-            st.success("Sistemul este complet liber! Energia circulă tur-retur în ambele sensuri, fără obstacole. Nu există recul.")
+            st.success("Sistemul este complet liber! Energia circulă curat în ambele sensuri.")
         elif fs == 25:
-            st.warning("Efect de Recul: Pentru că rețeaua este blocată în modul 'Amiciție', energia uriașă generată de notele tale de 9 și 10 se lovește de zidul contextului și este proiectată înapoi în biologia ta, generând o presiune statică.")
+            st.warning("Efect de Recul: Rețeaua fiind blocată în 'Amiciție', energia se întoarce ca o presiune statică.")
         else:
-            st.error("Scurtcircuit Critic: Energia ta rulează în gol. Săgeata electromagnetică se lovește de un vid de răspuns, întorcându-se complet în systemul tău nervos sub formă de epuizare.")
+            st.error("Scurtcircuit Critic: Energia ta rulează în gol și generează epuizare biologică.")
 
     st.markdown("---")
     st.subheader("🧠 Mesajul Sistemului (Interpretare TSC)")
-    
     if fs == 25:
-        st.markdown(f"**Atenție!** Nota ta maximă de la întrebările cheie acționează ca un generator de înaltă frecvență. În scenariul actual, corpul tău reabsoarbe zilnic o presiune de `+{fs}.00` puncte. Nu există conflicte deschise (Fluiditatea e mare), dar consumi combustibil interior pentru a inhiba manifestarea naturală a legăturii. Sistemul 'fierbe' mocnit sub masca de amiciție.")
+        st.markdown(f"**Atenție!** Sistemul 'fierbe' mocnit sub masca de amiciție. Energia generată de notele tale mari se lovește de context și se întoarce în biologia ta.")
     elif fs == 50:
-        st.markdown("Apare un decalaj critic. Notele tale mari arată o disponibilitate uriașă, dar lipsa de fază din teren întoarce energia sub formă de undă de șoc de `+50.00` puncte. Rețeaua ta tremură violent (Încetinire Critică). Risc de epuizare biologică.")
+        st.markdown("Apare un decalaj critic. Săgeata electromagnetică rulează în gol, riscând epuizarea sistemului nervos.")
     else:
-        st.markdown("Aliniere perfectă. Energia ta se transformă în vitalitate și pace. Sistemul tău biologic nu consumă energie pentru a se apăra, ci se încarcă direct din relație. Menține frecvența!")
+        st.markdown("Aliniere perfectă. Energia se transformă în vitalitate și pace. Menține frecvența!")
 
-# Subsol permanent corectat (Afișare sigură în pagină)
+# Subsol stabil centrat HTML
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: gray; font-size: 0.8em;'>✨ Aplicație bazată pe modelul matematic TSC dezvoltat de <b>Ciprian Axiniei</b>.</p>", unsafe_html=True)
