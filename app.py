@@ -4,7 +4,7 @@ import streamlit as st
 st.set_page_config(page_title="Analizor de Rezonanță TSC", page_icon="📊", layout="centered")
 
 # ==========================================
-# NOUTATE: BARA LATERALĂ (CREDITS & METODOLOGIE CIPRIAN AXINIEI)
+# BARA LATERALĂ (CREDITS & METODOLOGIE CIPRIAN AXINIEI)
 # ==========================================
 with st.sidebar:
     st.header("🔬 Informații Model")
@@ -14,7 +14,7 @@ with st.sidebar:
     st.info("🧠 **Ciprian Axiniei**")
     st.markdown("""
     **Despre Model:**
-    Acest algoritm analizează cuplajul electromagnetic și rezonanța biologică dintre două noduri informaționale dintr-o rețea. 
+    Acest algoritm analizează cuplajul electromagnetic și rezonanța biologică dintre două noduri informaționale dintr o rețea. 
     
     Prin ecuația Hamiltoniană, modelul măsoară modul în care constrângerile din realitate generează un efect de recul energetic în corpul uman (stres structural).
     """)
@@ -66,6 +66,9 @@ st.markdown("---")
 # ==========================================
 
 if st.button("🔮 Calculează Rezonanța TSC", type="primary"):
+    
+    # Animatie frumoasa la calcul
+    st.balloons()
     
     # Calcul mediilor
     lambda_param = (q1 + q2 + q3 + q4 + q5) / 5.0
@@ -151,6 +154,6 @@ if st.button("🔮 Calculează Rezonanța TSC", type="primary"):
     else:
         st.markdown("Aliniere perfectă. Energia ta se transformă în vitalitate și pace. Sistemul tău biologic nu consumă energie pentru a se apăra, ci se încarcă direct din relație. Menține frecvența!")
 
-# Subsol permanent (Footer)
+# Subsol permanent (Footer corectat)
 st.markdown("---")
-st.centered = st.caption("✨ Aplicație bazată pe modelul matematic TSC dezvoltat de **Ciprian Axiniei**.")
+st.caption("✨ Aplicație bazată pe modelul matematic TSC dezvoltat de **Ciprian Axiniei**.")
