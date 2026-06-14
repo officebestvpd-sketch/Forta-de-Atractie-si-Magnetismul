@@ -7,14 +7,14 @@ st.set_page_config(page_title="Analizor de Rezonanță TSC", page_icon="📊", l
 # BARA LATERALĂ (CREDITS & METODOLOGIE CIPRIAN AXINIEI)
 # ==========================================
 with st.sidebar:
-    st.header("🔬 Informații Model")
-    st.markdown("### **Teoria Susceptibilității Critice (TSC)**")
+    st.title("🔬 Teoria TSC")
+    st.markdown("### **Modelul Susceptibilității Critice**")
     st.markdown("---")
     st.markdown("💡 **Autor și Dezvoltator:**")
     st.info("🧠 **Ciprian Axiniei**")
     st.markdown("""
     **Despre Model:**
-    Acest algoritm analizează cuplajul electromagnetic și rezonanța biologică dintre două noduri informaționale dintr o rețea. 
+    Acest algoritm analizează cuplajul electromagnetic și rezonanța biologică dintre două noduri informaționale dintr-o rețea. 
     
     Prin ecuația Hamiltoniană, modelul măsoară modul în care constrângerile din realitate generează un efect de recul energetic în corpul uman (stres structural).
     """)
@@ -67,7 +67,7 @@ st.markdown("---")
 
 if st.button("🔮 Calculează Rezonanța TSC", type="primary"):
     
-    # Animatie frumoasa la calcul
+    # Animație la calcul
     st.balloons()
     
     # Calcul mediilor
@@ -142,7 +142,7 @@ if st.button("🔮 Calculează Rezonanța TSC", type="primary"):
         elif fs == 25:
             st.warning("Efect de Recul: Pentru că rețeaua este blocată în modul 'Amiciție', energia uriașă generată de notele tale de 9 și 10 se lovește de zidul contextului și este proiectată înapoi în biologia ta, generând o presiune statică.")
         else:
-            st.error("Scurtcircuit Critic: Energia ta rulează în gol. Săgeata electromagnetică se lovește de un vid de răspuns, întorcându-se complet în sistemul tău nervos sub formă de epuizare.")
+            st.error("Scurtcircuit Critic: Energia ta rulează în gol. Săgeata electromagnetică se lovește de un vid de răspuns, întorcându-se complet în systemul tău nervos sub formă de epuizare.")
 
     st.markdown("---")
     st.subheader("🧠 Mesajul Sistemului (Interpretare TSC)")
@@ -154,6 +154,6 @@ if st.button("🔮 Calculează Rezonanța TSC", type="primary"):
     else:
         st.markdown("Aliniere perfectă. Energia ta se transformă în vitalitate și pace. Sistemul tău biologic nu consumă energie pentru a se apăra, ci se încarcă direct din relație. Menține frecvența!")
 
-# Subsol permanent (Footer corectat)
+# Subsol permanent corectat (Afișare sigură în pagină)
 st.markdown("---")
-st.caption("✨ Aplicație bazată pe modelul matematic TSC dezvoltat de **Ciprian Axiniei**.")
+st.markdown("<p style='text-align: center; color: gray; font-size: 0.8em;'>✨ Aplicație bazată pe modelul matematic TSC dezvoltat de <b>Ciprian Axiniei</b>.</p>", unsafe_html=True)
