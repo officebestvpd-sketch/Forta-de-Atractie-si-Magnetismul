@@ -27,13 +27,24 @@ FISIER = "rezultate.csv"
 def salveaza(row):
     df_nou = pd.DataFrame([row])
     if os.path.exists(FISIER):
-        df_nou.to_csv(FISIER, mode='a', header=False, index=False)
+        try:
+            df_vechi = pd.read_csv(FISIER, on_bad_lines='skip', engine='python')
+            df_total = pd.concat([df_vechi, df_nou], ignore_index=True)
+        except Exception:
+            df_total = df_nou
     else:
-        df_nou.to_csv(FISIER, index=False)
+        df_total = df_nou
+    df_total.to_csv(FISIER, index=False)
 
 def incarca():
     if os.path.exists(FISIER):
-        return pd.read_csv(FISIER)
+        try:
+            return pd.read_csv(FISIER)
+        except pd.errors.ParserError:
+            try:
+                return pd.read_csv(FISIER, on_bad_lines='skip', engine='python')
+            except Exception:
+                return pd.DataFrame()
     return pd.DataFrame()
 
 if 'step' not in st.session_state:
