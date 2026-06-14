@@ -288,15 +288,26 @@ elif step == total_steps:
     profunzime = (q11 + q12) / 2                        # factor de profunzime
 
     E = 10 - profunzime
-    H = E - (atractie * conectiv / 10)                  # Hamiltonianul relatiei
+    H = E - (atractie * conectiv / 10)                  # Hamiltonianul relatiei (tensiunea sistemului)
 
+    # H teoretic: cu lambda, C, profunzime in [1,10] => E in [0,9], lambda*C/10 in [0.1,10]
+    # => H in [-10, 8.9]. H mic = tensiune mica = scor mare; H mare = tensiune mare = scor mic.
+    H_MIN, H_MAX = -10.0, 8.9
+    scor_H = 100 * (H_MAX - H) / (H_MAX - H_MIN)
+    scor_H = max(0.0, min(100.0, scor_H))
+
+    # Susceptibilitatea (chi) = instabilitatea sistemului:
+    # - dezechilibrul dintre atractie si conectivitate (cat de "asimetric" e cuplul)
+    # - varianta interna a tuturor celor 12 raspunsuri (cat de neuniform e profilul)
     vals_all = [q1,q2,q3,q4,q5,q6,q7,q8,q9,q10,q11,q12]
-    C_norm = conectiv / 10
-    beta = 1 / C_norm if C_norm > 0 else 10
-    var_C = float(np.var([q/10 for q in [q6,q7,q8,q9,q10]]))
-    chi = beta * var_C * 10
+    dezechilibru = abs(atractie - conectiv) / 9         # in [0,1]
+    var_all = float(np.var([v/10 for v in vals_all]))    # in [0, ~0.25]
+    chi = dezechilibru * 0.6 + var_all * 4               # susceptibilitatea totala
 
-    scor_brut = 100 - (H * 5) - (chi * 10)
+    # Penalizare de instabilitate aplicata scorului bazat pe H (max ~20 puncte)
+    penalizare_chi = min(20.0, chi * 15)
+
+    scor_brut = scor_H - penalizare_chi
 
     # Penalizare context
     if "Aliniere" in context:
@@ -311,17 +322,17 @@ elif step == total_steps:
     # ── STATUS ────────────────────────────────────────────────────────────
     if final >= 75:
         emoji_s, status_title, status_color, bg_color = "🟢", "Conexiune Puternică și Echilibrată", "#534AB7", "#EEEDFE"
-        insight = "Atracția și conectivitatea sunt puternice și echilibrate, iar profunzimea legăturii e reală. Sistemul vostru e stabil — există baze solide pe toate planurile. Dacă nu ați deschis deja comunicarea despre ce simțiți, acum este momentul potrivit."
+        insight = "Atracția și conectivitatea sunt puternice și echilibrate, iar profunzimea legăturii e reală. Tensiunea internă a sistemului (H) e scăzută — există baze solide pe toate planurile. Dacă nu ați deschis deja comunicarea despre ce simțiți, acum este momentul potrivit."
         st.balloons()
     elif final >= 55:
         emoji_s, status_title, status_color, bg_color = "🔵", "Potrivire Bună cu Zone de Crescut", "#185FA5", "#E6F1FB"
-        insight = "Există o fundație reală. Atracția e prezentă și conexiunea funcționează, dar există un mic dezechilibru între ce simți și cât de deschisă e comunicarea. Cultivă profunzimea — ea e ce transformă atracția în ceva durabil."
-    elif final >= 40:
+        insight = "Există o fundație reală. Atracția și conectivitatea sunt prezente și tensiunea internă (H) e moderată, dar nu minimă — există spațiu de creștere. Cultivă profunzimea și comunicarea — ele sunt cele care reduc tensiunea rămasă și transformă atracția în ceva durabil."
+    elif final >= 30:
         emoji_s, status_title, status_color, bg_color = "🟡", "Atracție Prezentă, Echilibru Fragil", "#BA7517", "#FAEEDA"
-        insight = "Simți ceva real, dar sistemul e instabil — fie atracția nu e susținută de o conectivitate profundă, fie contextul adaugă prea multă presiune. Întreabă-te: ce anume creează dezechilibrul? Vine din interior sau din circumstanțe externe?"
+        insight = "Simți ceva, dar sistemul are o tensiune internă (H) destul de mare — fie atracția nu e susținută de o conectivitate profundă, fie cele două nu sunt în echilibru, fie contextul adaugă prea multă presiune. Întreabă-te: ce anume creează dezechilibrul? Vine din interior sau din circumstanțe externe?"
     else:
         emoji_s, status_title, status_color, bg_color = "🔴", "Dezechilibru Semnificativ", "#A32D2D", "#FCEBEB"
-        insight = "Există o presiune internă mare — fie între ce simți și ce există în realitate, fie între atracție și conectivitate. Un scor mic nu înseamnă că relația e greșită. Poate înseamnă că momentul, contextul sau comunicarea nu sunt încă aliniate."
+        insight = "Tensiunea internă a sistemului (H) este mare — atracția, conectivitatea și profunzimea sunt scăzute sau dezechilibrate între ele. Un scor mic nu înseamnă că relația e greșită sau fără valoare, dar arată clar că, în acest moment, conexiunea reală simțită este redusă sau instabilă. Merită să te întrebi sincer ce anume lipsește."
 
     # Salvează
     salveaza({
@@ -356,7 +367,7 @@ elif step == total_steps:
     col1.metric("Atracție (λ)", f"{atractie:.1f}/10", help="Forța de atracție — cât de puternic te trage spre ea/el")
     col2.metric("Conectivitate (C)", f"{conectiv:.1f}/10", help="Cât de profundă și fluidă e legătura dintre voi")
     col3.metric("Profunzime", f"{profunzime:.1f}/10", help="Cât de profund e angajamentul și unicitatea legăturii")
-    col4.metric("Echilibru (χ)", f"{chi:.2f}", delta="stabil" if chi < 0.05 else "instabil", delta_color="normal" if chi < 0.05 else "inverse", help="Susceptibilitate — cât de echilibrat e sistemul intern. Mai mic = mai stabil.")
+    col4.metric("Echilibru (χ)", f"{chi:.2f}", delta="stabil" if chi < 0.2 else "instabil", delta_color="normal" if chi < 0.2 else "inverse", help="Susceptibilitate — cât de dezechilibrat e sistemul intern (diferența dintre atracție și conectivitate, plus varianța răspunsurilor). Mai mic = mai stabil.")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
