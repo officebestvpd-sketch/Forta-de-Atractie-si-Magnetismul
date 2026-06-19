@@ -448,6 +448,58 @@ elif step == total_steps:
     if penaliz > 0:
         st.caption(f"Penalizare de context: -{penaliz} puncte din scorul brut de {scor_brut:.0f}.")
 
+    # ── REZUMAT RĂSPUNSURI ────────────────────────────────────────────────
+    st.markdown("<br>", unsafe_allow_html=True)
+    with st.expander("📝 Vezi rezumatul complet al răspunsurilor tale"):
+        def bara_raspuns(val):
+            filled = int(val)
+            culoare = "#534AB7" if val >= 7 else "#BA7517" if val >= 4 else "#A32D2D"
+            bara = "█" * filled + "░" * (10 - filled)
+            return f"<span style='font-family:monospace;color:{culoare};letter-spacing:1px'>{bara}</span> <b style='color:{culoare}'>{val}/10</b>"
+
+        intrebari = [
+            # (sectiune, simbol, text, valoare)
+            ("🟣 ATRACȚIE", "1", "Cât de des te surprinzi gândindu-te la ea/el, chiar și fără niciun motiv anume?", q1),
+            ("🟣 ATRACȚIE", "2", "Dacă ai afla mâine că s-a mutat în altă țară pentru totdeauna, cât de tare ți-ar influența starea?", q2),
+            ("🟣 ATRACȚIE", "3", "Cât de mult te fascinează lucrurile la ea/el pe care nu le-ai găsit la altcineva?", q3),
+            ("🟣 ATRACȚIE", "4", "Când ești în preajma ei/lui, cât de mult simți că devii mai atent, mai prezent, mai viu?", q4),
+            ("🟣 ATRACȚIE", "5", "Cât de des ți-ai imaginat cum ar fi să petreceți timp împreună, să fiți în aceeași lume?", q5),
+            ("🟢 COMPATIBILITATE", "6", "Cât de ușor poți vorbi cu ea/el ore întregi despre orice, fără să simți că pierzi vremea?", q6),
+            ("🟢 COMPATIBILITATE", "7", "Când ești trist sau copleșit, cât de mult îți vine să îi spui ei/lui mai degrabă decât să ascunzi?", q7),
+            ("🟢 COMPATIBILITATE", "8", "Cât de des vi se întâmplă să vă gândiți la același lucru în același moment sau să vă căutați simultan?", q8),
+            ("🟢 COMPATIBILITATE", "9", "După o conversație cu ea/el, cât de mult pleci cu mai multă energie și stare bună decât ai avut înainte?", q9),
+            ("🟢 COMPATIBILITATE", "10", "Cât de mult simți că există o versiune a ta pe care o arăți doar în preajma ei/lui și nicăieri altundeva?", q10),
+            ("🟠 PROFUNZIME", "11", "Cât de mult ai lăsa orice altceva deoparte dacă ea/el ar fi în dificultate și ar avea nevoie de tine?", q11),
+            ("🟠 PROFUNZIME", "12", "Cât de greu ți-ar fi să descrii această persoană în doar trei cuvinte — pentru că simți că sunt prea puține?", q12),
+        ]
+
+        sectiune_curenta = None
+        for sectiune, nr, text, val in intrebari:
+            if sectiune != sectiune_curenta:
+                sectiune_curenta = sectiune
+                st.markdown(f"**{sectiune}**")
+                st.markdown("<hr style='margin:4px 0 10px;border-color:#eee'>", unsafe_allow_html=True)
+
+            st.markdown(f"""
+            <div style='margin-bottom:14px;padding:10px 14px;background:#fafafa;border-radius:10px;border:0.5px solid #eee'>
+              <div style='font-size:12px;color:#888;margin-bottom:4px'>Întrebarea {nr}</div>
+              <div style='font-size:14px;color:#333;margin-bottom:8px;line-height:1.5'>{text}</div>
+              <div style='font-size:14px'>{bara_raspuns(val)}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='background:#f5f3ff;border-radius:12px;padding:1rem 1.25rem;font-size:13px;color:#444;line-height:1.8'>
+          <b>Rezumat numeric:</b><br>
+          🟣 Atracție medie (λ): <b>{atractie:.1f}/10</b><br>
+          🟢 Conectivitate medie (C): <b>{conectiv:.1f}/10</b><br>
+          🟠 Profunzime medie: <b>{profunzime:.1f}/10</b><br>
+          ⚙️ Tensiune internă (H): <b>{H:.2f}</b><br>
+          📊 Scor final: <b>{int(final)}/100</b> ({ctx_label})
+        </div>
+        """, unsafe_allow_html=True)
+
     # ════════════════════════════════════════════════════════════════════
     # PORTRET COSMIC (doar mod profund) — secțiune SEPARATĂ, simbolică
     # ════════════════════════════════════════════════════════════════════
